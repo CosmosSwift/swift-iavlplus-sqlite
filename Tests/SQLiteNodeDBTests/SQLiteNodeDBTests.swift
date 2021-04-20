@@ -258,11 +258,14 @@ class NodeProtocolTests: XCTestCase {
             return i + 1
         }
         var res: [UInt8] = []
-        _ = tree.root.iterate(false) { (k, v) -> Bool in
-            print("{\(k.hex), \(v.hex)}")
-            res.append(k[0])
-            return false
-        }
+        _ = tree.root.iterate(
+            { (k, v) -> Bool in
+                print("{\(k.hex), \(v.hex)}")
+                res.append(k[0])
+                return false
+            },
+            false
+        )
 
         XCTAssertEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9].reversed(), res)
     }
@@ -448,7 +451,7 @@ class NodeProtocolTests: XCTestCase {
         print("\(p.leaves[0].key.hex)")
         XCTAssertTrue(p.treeEnd)
 
-        p.verify(tree.root.hash)
+        XCTAssertTrue(p.verify(tree.root.hash))
         XCTAssertThrowsError(try p.verifyItem(tree.root.hash, Data([10]), Data([10])))
         XCTAssertNoThrow(try p.verifyAbsence(tree.root.hash, Data([10])))
 
@@ -471,7 +474,7 @@ class NodeProtocolTests: XCTestCase {
             try tree.set(key: Data([$0]), value: Data([$0]))
         }
         try tree.commit()
-        print("\(tree.root(at: 0))")
+        print("\(String(describing: tree.root(at: 0)))")
         XCTAssertEqual(tree.versions.sorted(), [0, 1, 2])
         _ = try [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map {
             try tree.set(key: Data([$0]), value: Data([$0]))
@@ -494,7 +497,7 @@ class NodeProtocolTests: XCTestCase {
             try tree.set(key: Data([$0]), value: Data([$0]))
         }
         try tree.commit()
-        print("\(tree.root(at: 0))")
+        print("\(String(describing: tree.root(at: 0)))")
         _ = try [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map {
             try tree.set(key: Data([$0]), value: Data([$0]))
         }
